@@ -1,4 +1,4 @@
-import { SupportedLanguages } from "../config.js";
+import { SupportedLanguages, URLS } from "../config.js";
 
 /**
  * Fetches the documentation from a given URL
@@ -67,4 +67,26 @@ export function extractExamples(docuText: string, language: SupportedLanguages):
     }
 
     return examples;
+}
+
+/**
+ * Fetches the README content for a specific SDK language.
+ * @param language The language of the SDK ('typescript' or 'python').
+ * @returns The README content as a string.
+ * @throws If fetching fails.
+ */
+export async function fetchReadme(language: SupportedLanguages): Promise<string> {
+    // Directly access the README URL using the language as the key
+    const url = URLS.repos[language].readme;
+
+    try {
+        const response = await fetch(url);
+        if (!response.ok) {
+            throw new Error(`Error fetching README from ${url}: ${response.status} ${response.statusText}`);
+        }
+        return await response.text();
+    } catch (error) {
+        console.error(`Failed to fetch README for ${language}: ${error}`);
+        throw error; // Re-throw for the caller (tool handler) to manage
+    }
 }

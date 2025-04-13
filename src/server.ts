@@ -2,7 +2,7 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { Transport } from "@modelcontextprotocol/sdk/shared/transport.js";
 import { z } from "zod";
 import { SupportedLanguages, supportedLanguages, URLS } from "./config.js";
-import fetchFullDocu, { extractExamples } from "./util/docuFetch.js";
+import fetchFullDocu, { extractExamples, fetchReadme } from "./util/docuFetch.js";
 
 export class McpDocuServer {
     private readonly server: McpServer;
@@ -30,30 +30,69 @@ export class McpDocuServer {
      * Registers the tools provided by this server.
      */
     private registerTools(): void {
-        // TODO: ADD MORE TOOLS
         this.server.tool(
             "get_code_examples",
-            "Get all code examples for a specified language",
+            "Get all code examples for a specified language from the main documentation.",
             {
-                language: z.enum(supportedLanguages).optional(), // Default to 'typescript'
+                language: z.enum(supportedLanguages),
             },
-            async ({ language }: { language?: SupportedLanguages; }) => {
-                const docuText = await fetchFullDocu(URLS.FULL_DOCU);
+            async ({ language }: { language: SupportedLanguages; }) => {
+                // Use try-catch for error handling during fetch and processing
+                try {
+                    const docuText = await fetchFullDocu(URLS.FULL_DOCU);
+                    const examples = extractExamples(docuText, language);
 
-                // Default to 'typescript' if no language is provided
-                language = language || 'typescript';
-                const examples = extractExamples(docuText, language);
-
-                return {
-                    content: [
-                        {
-                            type: "text",
-                            text: JSON.stringify(examples, null, 2),
-                        }
-                    ]
+                    return {
+                        content: [
+                            {
+                                type: "text",
+                                text: JSON.stringify(examples, null, 2),
+                            }
+                        ]
+                    };
+                } catch (error) {
+                    // Log the error on the server side
+                    this.error("Error in get_code_examples:", error);
+                    // Throw an error that the MCP client can understand
+                    // Adjust error message and code as needed based on MCP spec/SDK features
+                    throw new Error(`Failed to get code examples: ${error instanceof Error ? error.message : String(error)}`);
                 }
             }
-        )
+        );
+
+        // Register the new get_readme tool
+        this.server.tool(
+            "get_readme",
+            "Get the README content for the specified SDK language.",
+            {
+                // Define the 'language' parameter using zod schema
+                language: z.enum(supportedLanguages), // Make language required for this tool
+            },
+            // Async handler function for the tool
+            async ({ language }: { language: SupportedLanguages; }) => {
+                // Use try-catch for robust error handling
+                try {
+                    // Fetch the README content using the utility function
+                    const readmeContent = await fetchReadme(language);
+                    // Return the content in the expected MCP format
+                    return {
+                        content: [
+                            {
+                                type: "text",
+                                text: readmeContent,
+                            }
+                        ]
+                    };
+                } catch (error) {
+                    // Log the error on the server side
+                    this.error(`Error in get_readme for ${language}:`, error);
+                    // Propagate a user-friendly error back to the MCP client
+                    throw new Error(`Failed to fetch README for ${language}: ${error instanceof Error ? error.message : String(error)}`);
+                }
+            }
+        );
+
+        // TODO: ADD MORE TOOLS (Removed the original TODO comment from here as we added a tool)
     }
 
     /**

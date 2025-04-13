@@ -1,23 +1,24 @@
-// Constants
+import { ZodEnum } from "zod";
 
-// The URLs for the SDK Repos
+// Repository details keyed by language
 const REPOS = {
-    TYPESCRIPT_SDK_REPO: {
+    typescript: {
         repo: "https://github.com/modelcontextprotocol/typescript-sdk",
         readme: "https://raw.githubusercontent.com/modelcontextprotocol/typescript-sdk/refs/heads/main/README.md"
     },
-    PYTHON_SDK_REPO: {
+    python: {
         repo: "https://github.com/modelcontextprotocol/python-sdk",
         readme: "https://raw.githubusercontent.com/modelcontextprotocol/python-sdk/refs/heads/main/README.md"
     },
-}
+} as const;
 
-// All urls
+// Exported URLs used by the application
 export const URLS = {
     FULL_DOCU: "https://modelcontextprotocol.io/llms-full.txt",
     repos: REPOS,
 };
 
-// List and Type of all supported languages
-export const supportedLanguages = ["typescript", "python"] as const;
+// Supported languages derived directly from REPOS keys.
+// Assert as non-empty tuple for Zod compatibility.
+export const supportedLanguages = Object.keys(REPOS) as [keyof typeof REPOS, ...(keyof typeof REPOS)[]];
 export type SupportedLanguages = typeof supportedLanguages[number];
