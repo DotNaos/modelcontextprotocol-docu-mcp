@@ -1,5 +1,3 @@
-import { ZodEnum } from "zod";
-
 // Repository details keyed by language
 const REPOS = {
     typescript: {
@@ -12,13 +10,12 @@ const REPOS = {
     },
 } as const;
 
-// Exported URLs used by the application
+// Exported URLs
 export const URLS = {
     FULL_DOCU: "https://modelcontextprotocol.io/llms-full.txt",
     repos: REPOS,
 };
 
-// Supported languages derived directly from REPOS keys.
-// Assert as non-empty tuple for Zod compatibility.
+// Supported languages derived from REPOS keys, asserted as non-empty tuple for Zod
 export const supportedLanguages = Object.keys(REPOS) as [keyof typeof REPOS, ...(keyof typeof REPOS)[]];
 export type SupportedLanguages = typeof supportedLanguages[number];
