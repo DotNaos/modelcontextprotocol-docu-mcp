@@ -1,7 +1,7 @@
 import { Transport } from '@modelcontextprotocol/sdk/shared/transport.js';
 export { startServer } from './cli.js';
 
-declare class MinimalMcpServer {
+declare class McpDocuServer {
     private readonly server;
     constructor();
     private registerTools;
@@ -10,4 +10,4 @@ declare class MinimalMcpServer {
     private error;
 }
 
-export { MinimalMcpServer };
+export { McpDocuServer as MinimalMcpServer };

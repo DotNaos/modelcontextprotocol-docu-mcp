@@ -1,13 +1,13 @@
 #!/usr/bin/env node
 
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
-import { MinimalMcpServer } from "./server.js"; // Corrected import path
+import { McpDocuServer } from "./server.js"; // Corrected import path
 
 /**
  * Starts the MCP server using stdio transport.
  */
 export async function startServer(): Promise<void> {
-    const server = new MinimalMcpServer();
+    const server = new McpDocuServer();
     const transport = new StdioServerTransport();
     await server.connect(transport);
     // Logging will now be handled via the server's log/error methods sending messages to the client

@@ -1,24 +1,12 @@
 {
-    "inputs": [
-        {
-            "type": "promptString",
-            "id": "example-token",
-            "description": "The token for the MCP server",
-            "password": true
-        }
-    ],
     "servers": {
-        "example-mcp-server": {
+        "modelcontextprotocol-docu-mcp": {
             "type": "stdio",
             "command": "npx",
             "args": [
                 "-y",
-                // IMPORTANT: Ensure this points to your GitHub repo
-                "github:Username/example-mcp-server",
+                "github:DotNaos/modelcontextprotocol-docu-mcp",
             ],
-            "env": {
-                "EXAMPLE_TOKEN": "${input:example-token}",
-            }
         }
     }
 }

@@ -1,19 +1,16 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { Transport } from "@modelcontextprotocol/sdk/shared/transport.js";
 import { z } from "zod";
+import { SupportedLanguages, supportedLanguages, URLS } from "./config.js";
+import fetchFullDocu, { extractExamples } from "./util/docuFetch.js";
 
-/**
- * A minimal example MCP Server.
- */
-export class MinimalMcpServer {
+export class McpDocuServer {
     private readonly server: McpServer;
 
     constructor() {
         this.server = new McpServer(
             {
-                // TODO: Replace with your server's actual name
-                name: "Minimal MCP Server",
-                // TODO: Replace with your server's actual version
+                name: "ModelContextProtocol Docu Server",
                 version: "0.1.0",
             },
             {
@@ -33,35 +30,30 @@ export class MinimalMcpServer {
      * Registers the tools provided by this server.
      */
     private registerTools(): void {
+        // TODO: ADD MORE TOOLS
         this.server.tool(
-            "hello_world", // Tool name
-            "A simple tool that returns a greeting.", // Tool description
-            { // Input schema using Zod
-                name: z.string().describe("The name to include in the greeting."),
+            "get_code_examples",
+            "Get all code examples for a specified language",
+            {
+                language: z.enum(supportedLanguages).optional(), // Default to 'typescript'
             },
-            async ({ name }) => { // Tool implementation
-                try {
-                    // Log the execution of the tool
-                    this.log(`Executing hello_world tool with name: ${name}`);
+            async ({ language }: { language?: SupportedLanguages; }) => {
+                const docuText = await fetchFullDocu(URLS.FULL_DOCU);
 
-                    const greeting: string = `Hello, ${name}! Welcome to the minimal MCP server.`;
+                // Default to 'typescript' if no language is provided
+                language = language || 'typescript';
+                const examples = extractExamples(docuText, language);
 
-                    // Return the result
-                    return {
-                        content: [{ type: "text", text: greeting }],
-                    };
-                } catch (error: unknown) {
-                    const message = error instanceof Error ? error.message : String(error);
-                    // Log the error
-                    this.error(`Error in hello_world tool: ${message}`);
-                    // Return an error response
-                    return {
-                        isError: true,
-                        content: [{ type: "text", text: `Error executing tool: ${message}` }],
-                    };
+                return {
+                    content: [
+                        {
+                            type: "text",
+                            text: JSON.stringify(examples, null, 2),
+                        }
+                    ]
                 }
-            },
-        );
+            }
+        )
     }
 
     /**

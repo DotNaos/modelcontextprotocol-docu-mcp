@@ -1,4 +1,4 @@
-# Example MCP-Server
+# Model Context Protocol Docu Server
 
 ## Usage
 
